@@ -1,5 +1,34 @@
-# Vue 3 + TypeScript + Vite
+<img width="875" alt="QuantumLogoWhite" src="https://github.com/user-attachments/assets/6f965906-1251-490b-8bf8-c61c2605f1ab">
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Simple Chat Application
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+A project developed during the **Hypermedia UX Engineering** course at **FH Oberösterreich Campus Hagenberg** Department of **Interactive Media**
+
+
+Quantum Chat allows users to connect, share, and interact.
+The project uses [Vue](https://vuejs.org/) for the frontend and [Appwrite](https://appwrite.io/) for backend functionalities (like user authentification and NoSQL database), showcasing the integration of modern web technologies for a seamless user experience. Styling was done with [Tailwind CSS](https://tailwindcss.com/), as well as additional UI components from [Shadcn](https://ui.shadcn.com/) 
+
+Project members:
+
+- **Jan Eberwein**, S2410629003
+- **Johannes Eder**, S2410629004
+
+---
+
+### To run the app:
+
+```js
+git clone QUANTUM-SOCIAL
+cd quantum-social
+npm install
+npm run dev
+
+// Server is runnung on "http://localhost:5173"
+```
+
+> **Note:** '.env.local' file with necessary app keys is needed in order to connect to Backend as a Service **"APPWRITE"**!
+
+---
+
+### Version Control
+VC was managed on [Github: QUANTUM SOCIAL ](https://github.com/jan-eberwein/quantum-chat/)
