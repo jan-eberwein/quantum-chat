@@ -31,4 +31,4 @@ npm run dev
 ---
 
 ### Version Control
-VC was managed on [Github: QUANTUM SOCIAL ](https://github.com/jan-eberwein/quantum-chat/)
+VC was managed on [Github: QUANTUM CHAT ](https://github.com/jan-eberwein/quantum-chat/)
