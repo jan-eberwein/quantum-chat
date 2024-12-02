@@ -18,7 +18,7 @@ Project members:
 ### To run the app:
 
 ```js
-git clone QUANTUM-SOCIAL
+git clone QUANTUM-CHAT
 cd quantum-social
 npm install
 npm run dev
