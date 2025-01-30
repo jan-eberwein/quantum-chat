@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 
+onMounted(() => {});
 </script>
 
 <template>
-  <h1>Quantum Chat</h1>
+  <main class="w-screen h-screen bg-gray-100 flex">
+    <RouterView></RouterView>
+  </main>
 </template>
-
-<style scoped>
-
-</style>
