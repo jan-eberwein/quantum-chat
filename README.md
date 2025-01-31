@@ -13,7 +13,10 @@ Project members:
 
 ---
 
-### To run the app:
+### To run the app (deployed online):
+[Quantum Chat (Live Demo)](https://quantum-chat-kappa.vercel.app/)
+
+### To run the app (local):
 
 ```js
 git clone QUANTUM-CHAT
