@@ -44,9 +44,12 @@
         class="p-4 border-b cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
         @click="$emit('chat-selected', chat)"
       >
+      <div class="flex items-center gap-4">
+        <Avatar />
         <p class="font-semibold">{{ chat.name }}</p>
         <p class="text-gray-500 dark:text-gray-400">{{ chat.lastMessage }}</p>
-      </li>
+    </div>
+    </li>
     </ul>
   </section>
 </template>
@@ -61,8 +64,16 @@ import Avatar from "@/components/Avatar.vue";
 const router = useRouter();
 
 const chats = ref([
-  { id: 1, name: "Alice", lastMessage: "Hey, how are you?" },
-  { id: 2, name: "Bob", lastMessage: "See you later!" },
+  { id: 1, name: "Johannes Eder", lastMessage: "Hey, how are you?" },
+  { id: 2, name: "Max Mustermann", lastMessage: "See you later!" },
+  { id: 3, name: "John Doe", lastMessage: "I'm fine, thank you!" },
+  { id: 4, name: "Jane Doe", lastMessage: "I'm on my way." },
+  { id: 5, name: "Alice Weidmann", lastMessage: "I'm sorry, I can't make it." },
+  { id: 6, name: "Bob Turner", lastMessage: "I'm on my way." },
+  { id: 7, name: "Charlie Walison", lastMessage: "I'm sorry, I can't make it." },
+  { id: 8, name: "David Brandon", lastMessage: "I'm on my way." },
+  { id: 9, name: "Eve Frank", lastMessage: "I'm sorry, I can't make it." },
+  { id: 10, name: "Franky Schwarz", lastMessage: "I'm on my way." },
 ]);
 async function logout() {
   await account.deleteSession("current");

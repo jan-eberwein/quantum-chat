@@ -2,7 +2,8 @@
   <section class="w-full h-screen flex flex-col bg-white dark:bg-gray-900">
     <header class="p-4 flex items-center border-b dark:border-gray-700">
       <button class="lg:hidden p-2 text-blue-500" @click="$emit('back')">← Back</button>
-      <h2 class="ml-4 text-lg font-semibold">{{ chat.name }}</h2>
+        <Avatar />
+      <h2 class="ml-4 text-2xl font-semibold">{{ chat.name }}</h2>
     </header>
     <div class="flex-1 p-4 overflow-y-auto">
       <div v-for="message in chat.messages" :key="message.id" class="mb-2">
@@ -19,6 +20,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import Avatar from "@/components/Avatar.vue";
 
 const props = defineProps<{ chat: any }>();
 const newMessage = ref("");

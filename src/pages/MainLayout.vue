@@ -7,6 +7,7 @@
         <ChatWindow v-if="selectedChat" :chat="selectedChat" />
         <ChatList v-else class="lg:hidden" @chat-selected="selectedChat = $event" />
       </div>
+      <DarkModeToggle />
     </main>
   </template>
   
@@ -14,6 +15,7 @@
   import { ref } from "vue";
   import ChatList from "@/components/ChatList.vue";
   import ChatWindow from "@/components/ChatWindow.vue";
+  import DarkModeToggle from "@/components/DarkModeToggle.vue";
   
   const selectedChat = ref(null);
   </script>
