@@ -1,9 +1,9 @@
-name: Deploy quantum-chat application
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main 
+      - main  # Falls dein Hauptbranch anders heißt, passe ihn an
   pull_request:
     branches:
       - main
@@ -24,6 +24,13 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+
+      - name: Create .env file
+        run: |
+          echo "VITE_APPWRITE_URL=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
+          echo "VITE_APPWRITE_PROJECT_ID=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
+          echo "VITE_APPWRITE_DATABASE_ID=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
+          echo "VITE_APPWRITE_STORAGE_ID=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
 
       - name: Install dependencies
         run: npm install
