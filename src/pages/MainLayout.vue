@@ -4,6 +4,7 @@
         <ChatList @chat-selected="selectedChat = $event" />
       </div>
       <div class="w-full lg:w-2/3">
+        <ChatWindow v-if="selectedChat" :chat="selectedChat" />
         <ChatList v-else class="lg:hidden" @chat-selected="selectedChat = $event" />
       </div>
     </main>
@@ -12,6 +13,7 @@
   <script setup lang="ts">
   import { ref } from "vue";
   import ChatList from "@/components/ChatList.vue";
+  import ChatWindow from "@/components/ChatWindow.vue";
   
   const selectedChat = ref(null);
   </script>
