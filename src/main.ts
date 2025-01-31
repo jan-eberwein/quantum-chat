@@ -8,7 +8,6 @@ import { ref } from "vue";
 import Signin from "./pages/Signin.vue";
 import Signup from "./pages/Signup.vue";
 import MainLayout from "./pages/MainLayout.vue";
-import ChatList from "./components/ChatList.vue";
 import ChatWindow from "./components/ChatWindow.vue";
 
 const isAuthenticated = ref(false);
@@ -53,7 +52,7 @@ const router = createRouter({
 });
 
 // Route Guard for Authentification
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _ , next) => {
   await checkAuthStatus(); // Check Auth Status
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
