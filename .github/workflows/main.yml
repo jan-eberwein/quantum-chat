@@ -3,13 +3,15 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Falls dein Hauptbranch anders heißt, passe ihn an
+      - main  # Adjust if your default branch has a different name
   pull_request:
     branches:
       - main
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -17,20 +19,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
 
-      - name: Create .env file
+      - name: Configure .env file
         run: |
-          echo "VITE_APPWRITE_URL=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
-          echo "VITE_APPWRITE_PROJECT_ID=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
-          echo "VITE_APPWRITE_DATABASE_ID=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
-          echo "VITE_APPWRITE_STORAGE_ID=${{ secrets.APPWRITE_SECRETS }}" >> .env.local
+          echo "VITE_APPWRITE_URL=${{ secrets.VITE_APPWRITE_URL }}" >> .env.local
+          echo "VITE_APPWRITE_PROJECT_ID=${{ secrets.VITE_APPWRITE_PROJECT_ID }}" >> .env.local
+          echo "VITE_APPWRITE_DATABASE_ID=${{ secrets.VITE_APPWRITE_DATABASE_ID }}" >> .env.local
+          echo "VITE_APPWRITE_STORAGE_ID=${{ secrets.VITE_APPWRITE_STORAGE_ID }}" >> .env.local
 
       - name: Install dependencies
         run: npm install
@@ -39,7 +41,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: gh-pages  # Der Branch, in den deployt wird
-          folder: dist  # Das Verzeichnis mit den gebauten Dateien
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist  # Ensure this matches your build output directory
