@@ -3,9 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Adjust if your default branch has a different name
-  pull_request:
-    branches:
       - main
 
 permissions:
@@ -38,10 +35,12 @@ jobs:
         run: npm install
 
       - name: Build project
+        env:
+          DEPLOY_ENV: github
         run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist  # Ensure this matches your build output directory
+          publish_dir: ./dist
