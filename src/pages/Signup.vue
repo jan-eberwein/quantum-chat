@@ -121,7 +121,7 @@ async function signup() {
   try {
     await account.create(ID.unique(), email.value, password.value);
     await account.createEmailPasswordSession(email.value, password.value);
-    router.push({ name: "application" });
+    await router.push({ name: "main-layout" });
   } catch (error: any) {
     console.error("Signup error:", error);
 

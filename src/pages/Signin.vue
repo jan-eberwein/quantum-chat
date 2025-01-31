@@ -83,7 +83,7 @@ async function signin() {
 
   try {
     await account.createEmailPasswordSession(email.value, password.value);
-    router.push({ name: "application" });
+    await router.push({ name: "main-layout" });
   } catch (error: any) {
     console.error("Signin error:", error);
     
