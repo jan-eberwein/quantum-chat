@@ -6,6 +6,9 @@ onMounted(() => {});
 
 <template>
   <main class="w-screen h-screen bg-gray-100 flex">
-    <RouterView></RouterView>
+    <!-- Needed for mobile chat window to use full width -->
+    <div class="flex-1">
+      <RouterView></RouterView>
+    </div>
   </main>
 </template>

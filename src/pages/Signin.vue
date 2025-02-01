@@ -2,13 +2,9 @@
   <section class="w-full h-full flex flex-col items-center justify-center dark:bg-gray-900">
     <div class="w-80 flex flex-col items-center">
       <img
-        :src="
-          isDarkMode
-            ? logoWhite
-            :logo
-        "
-        alt="Quantum Logo"
-        class="w-64"
+          :src="isDarkMode ? logoWhite : logo"
+          alt="Quantum Logo"
+          class="w-64"
       />
 
       <h1 class="text-4xl mt-2 font-bold">Sign In</h1>
@@ -24,7 +20,6 @@
 
       <Button text="Sign In" class="mt-10 w-full" @click="signin" />
 
-      <!-- Allgemeine Fehlernachricht -->
       <p v-if="errorMessage && errorField === 'general'" class="text-red-500 text-sm mt-3">{{ errorMessage }}</p>
     </div>
     <DarkModeToggle />
@@ -33,17 +28,15 @@
 
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
+import { useRouter } from "vue-router";
 import Input from "@/components/Input.vue";
 import Button from "@/components/Button.vue";
-import { account } from "@/config/config.ts";
-import { useRouter } from "vue-router";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
+import { appwriteService } from "@/lib/appwriteService";
 import logo from "@/assets/logo.png";
 import logoWhite from "@/assets/logo_white.png";
 
-const isDarkMode = ref(
-  window.matchMedia("(prefers-color-scheme: dark)").matches
-);
+const isDarkMode = ref(window.matchMedia("(prefers-color-scheme: dark)").matches);
 
 watchEffect(() => {
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -53,12 +46,10 @@ watchEffect(() => {
   return () => mediaQuery.removeEventListener("change", updateMode);
 });
 
-const email = ref("");  
+const email = ref("");
 const password = ref("");
-
 const errorMessage = ref("");
 const errorField = ref("");
-
 const router = useRouter();
 
 async function signin() {
@@ -69,7 +60,7 @@ async function signin() {
     errorMessage.value = "Email is required.";
     errorField.value = "email";
     return;
-  } 
+  }
   if (!isValidEmail(email.value)) {
     errorMessage.value = "Invalid email format.";
     errorField.value = "email";
@@ -82,11 +73,11 @@ async function signin() {
   }
 
   try {
-    await account.createEmailPasswordSession(email.value, password.value);
+    await appwriteService.signIn(email.value, password.value);
     await router.push({ name: "main-layout" });
   } catch (error: any) {
     console.error("Signin error:", error);
-    
+
     if (error.message.includes("email") || error.message.includes("Invalid credentials")) {
       errorMessage.value = "Invalid email or password.";
       errorField.value = "general";

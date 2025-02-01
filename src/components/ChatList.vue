@@ -1,82 +1,177 @@
 <template>
-  <section class="w-full h-screen overflow-y-auto bg-gray-100 dark:bg-gray-800">
-    <div
-      class="flex items-center justify-between p-4 border-b dark:border-gray-700"
-    >
-      <img src="../assets/logo.png" alt="Logo" class="w-64" />
-      <button
-        @click="logout"
-        class="p-3 bg-red-700 text-white shadow-md rounded-full flex items-center gap-2"
-      >
-        <span>Sign Out</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="size-6"
+  <div class="w-full h-full flex flex-col dark:bg-gray-900">
+    <!-- Logged-in User Info -->
+    <div class="p-4 border-b flex justify-between items-center bg-gray-100 dark:bg-gray-800">
+      <span class="text-lg font-semibold">
+        Logged in as: {{ currentUser?.name || currentUser?.email || "Loading..." }}
+      </span>
+      <button @click="logout" class="text-red-500 hover:underline">Logout</button>
+    </div>
+
+    <h2 class="text-xl font-semibold p-4">Chats</h2>
+
+    <!-- Start New Chat -->
+    <div class="p-4">
+      <select v-model="selectedUser" class="p-2 border rounded-lg w-full">
+        <option :value="null" disabled>Select a user to chat with</option>
+        <option
+            v-for="user in filteredUsers"
+            :key="user.accountId"
+            :value="user.accountId"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
-          />
-        </svg>
+          {{ user.name || user.email }}
+        </option>
+      </select>
+      <button
+          @click="startNewChat"
+          class="mt-2 w-full bg-blue-500 text-white p-2 rounded-lg"
+          :disabled="!selectedUser"
+      >
+        Start Chat
       </button>
     </div>
-    <div class="flex items-center p-4 bg-slate-200 dark:bg-gray-700">
-      <Avatar />
-      <p class="ml-4 font-semibold">Jan</p>
-    </div>
-    <hr class="my-4" />
-    <div class="flex items-center justify-between p-4">
-      <h1 class="font-semibold">Chats</h1>
-      <Button
-        text="New Chat"
-        class="bg-blue-500 text-white rounded-full shadow-md"
-      />
-    </div>
-    <ul>
+
+    <!-- Loading Indicator -->
+    <div v-if="loading" class="p-4 text-gray-500">Loading chats...</div>
+
+    <!-- Error Message -->
+    <div v-if="errorMessage" class="p-4 text-red-500">{{ errorMessage }}</div>
+
+    <!-- Chat List -->
+    <ul v-if="!loading && chats.length > 0">
       <li
-        v-for="chat in chats"
-        :key="chat.id"
-        class="p-4 border-b cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
-        @click="$emit('chat-selected', chat)"
+          v-for="chat in chats"
+          :key="chat.$id"
+          @click="openChat(chat)"
+          class="p-4 border-b cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
       >
-      <div class="flex items-center gap-4">
-        <Avatar />
-        <p class="font-semibold">{{ chat.name }}</p>
-        <p class="text-gray-500 dark:text-gray-400">{{ chat.lastMessage }}</p>
-    </div>
-    </li>
+        <span v-if="chat.user1Id !== currentUser?.$id">
+          Chat with {{ chat.user1Name }}
+        </span>
+        <span v-else>
+          Chat with {{ chat.user2Name }}
+        </span>
+      </li>
     </ul>
-  </section>
+
+    <p v-if="!loading && chats.length === 0" class="p-4 text-gray-500">No chats found.</p>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import Button from "@/components/Button.vue";
-import { account } from "@/config/config.ts";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import Avatar from "@/components/Avatar.vue";
+import { appwriteService } from "@/lib/appwriteService";
+
+// Accept a prop to know which mode we're in: "mobile" or "desktop"
+const props = defineProps({
+  mode: {
+    type: String,
+    default: "mobile",
+  }
+});
+const emit = defineEmits(["chat-selected"]);
 
 const router = useRouter();
+// Would be better to type guard with interfaces
+const chats = ref<any[]>([]);
+const users = ref<any[]>([]);
+const selectedUser = ref<string | null>(null);
+const loading = ref(true);
+const errorMessage = ref("");
+const currentUser = ref<any>(null);
 
-const chats = ref([
-  { id: 1, name: "Johannes Eder", lastMessage: "Hey, how are you?" },
-  { id: 2, name: "Max Mustermann", lastMessage: "See you later!" },
-  { id: 3, name: "John Doe", lastMessage: "I'm fine, thank you!" },
-  { id: 4, name: "Jane Doe", lastMessage: "I'm on my way." },
-  { id: 5, name: "Alice Weidmann", lastMessage: "I'm sorry, I can't make it." },
-  { id: 6, name: "Bob Turner", lastMessage: "I'm on my way." },
-  { id: 7, name: "Charlie Walison", lastMessage: "I'm sorry, I can't make it." },
-  { id: 8, name: "David Brandon", lastMessage: "I'm on my way." },
-  { id: 9, name: "Eve Frank", lastMessage: "I'm sorry, I can't make it." },
-  { id: 10, name: "Franky Schwarz", lastMessage: "I'm on my way." },
-]);
+// Computed: filter out the current user and those already in chats.
+const filteredUsers = computed(() => {
+  return users.value.filter((u: any) => {
+    return (
+        u.accountId !== currentUser.value?.$id &&
+        !chats.value.some((chat: any) => {
+          return (
+              (chat.user1Id === currentUser.value.$id && chat.user2Id === u.accountId) ||
+              (chat.user2Id === currentUser.value.$id && chat.user1Id === u.accountId)
+          );
+        })
+    );
+  });
+});
+
+onMounted(async () => {
+  try {
+    loading.value = true;
+    currentUser.value = await appwriteService.getCurrentUser();
+    if (!currentUser.value) {
+      throw new Error("User not authenticated.");
+    }
+
+    // Fetch enriched chats with partner names.
+    const chatData = await appwriteService.getUserChatsWithNames(currentUser.value.$id);
+    chats.value = chatData;
+
+    // Fetch all users (excluding current user)
+    const userData = await appwriteService.getAllUsers(currentUser.value.$id);
+    users.value = userData;
+  } catch (error: any) {
+    console.error("[ChatList] Error:", error);
+    errorMessage.value = "Failed to load chats.";
+  } finally {
+    loading.value = false;
+  }
+});
+
+// Start a new chat
+async function startNewChat() {
+  if (!selectedUser.value) return;
+  try {
+    console.log(`[startNewChat] Initiating chat between ${currentUser.value.$id} and ${selectedUser.value}`);
+    // Create or fetch existing chat.
+    const newChat = await appwriteService.createChat(currentUser.value.$id, selectedUser.value);
+    console.log(`[startNewChat] Chat created/found with ID: ${newChat.$id}`);
+
+    // If the returned chat is missing partner names, enrich it using our local users list.
+    if (!newChat.user1Name || !newChat.user2Name) {
+      if (currentUser.value.$id === newChat.user1Id) {
+        const partner = users.value.find((u: any) => u.accountId === newChat.user2Id);
+        newChat.user2Name = partner?.name || "Unknown";
+      } else {
+        const partner = users.value.find((u: any) => u.accountId === newChat.user1Id);
+        newChat.user1Name = partner?.name || "Unknown";
+      }
+    }
+
+    // Add the new chat to our list and clear the selection.
+    chats.value.push(newChat);
+    selectedUser.value = null;
+
+    // In desktop mode, emit the selected chat; in mobile, navigate to the chat route.
+    if (props.mode === "desktop") {
+      emit("chat-selected", newChat);
+    } else {
+      await router.push({ name: "chat-window", params: { id: newChat.$id } });
+    }
+  } catch (error: any) {
+    console.error("[Start New Chat] Error:", error);
+    errorMessage.value = "Failed to start chat.";
+  }
+}
+
+// Logout function
 async function logout() {
-  await account.deleteSession("current");
-  router.push({ name: "signin" });
+  try {
+    await appwriteService.logout();
+    router.push({ name: "signin" });
+  } catch (error: any) {
+    console.error("[Logout Error]:", error);
+    errorMessage.value = "Failed to log out.";
+  }
+}
+
+// When a chat is clicked, behave differently based on mode.
+function openChat(chat: any) {
+  if (props.mode === "desktop") {
+    emit("chat-selected", chat);
+  } else {
+    router.push({ name: "chat-window", params: { id: chat.$id } });
+  }
 }
 </script>
