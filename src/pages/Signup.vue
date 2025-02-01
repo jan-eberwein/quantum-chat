@@ -1,32 +1,90 @@
 <template>
-  <section class="w-full h-full flex flex-col items-center justify-center dark:bg-gray-900">
+  <section
+    class="w-full h-full flex flex-col items-center justify-center dark:bg-gray-900"
+  >
     <div class="w-80 flex flex-col items-center">
       <img
-          :src="isDarkMode ? logoWhite : logo"
-          alt="Quantum Logo"
-          class="w-auto"
+        :src="isDarkMode ? logoWhite : logo"
+        alt="Quantum Logo"
+        class="w-auto"
       />
 
       <h1 class="text-4xl mt-2 font-bold">Create an Account</h1>
       <p>
-        or <span class="text-blue-500"><router-link to="/signin">Sign In</router-link></span>
+        or
+        <span class="text-blue-500"
+          ><router-link to="/signin">Sign In</router-link></span
+        >
       </p>
 
-      <Input type="text" label="Name" placeholder="Your Name" class="w-full mt-5" v-model="name" @enter="signup" />
-      <p v-if="errorMessage && errorField === 'name'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
+      <Input
+        type="text"
+        label="Name"
+        placeholder="Your Name"
+        class="w-full mt-5"
+        v-model="name"
+        @enter="signup"
+      />
+      <p
+        v-if="errorMessage && errorField === 'name'"
+        class="text-red-500 text-sm mt-1"
+      >
+        {{ errorMessage }}
+      </p>
 
-      <Input type="text" label="Email" placeholder="user@example.com" class="w-full mt-5" v-model="email" @enter="signup"/>
-      <p v-if="errorMessage && errorField === 'email'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
+      <Input
+        type="text"
+        label="Email"
+        placeholder="user@example.com"
+        class="w-full mt-5"
+        v-model="email"
+        @enter="signup"
+      />
+      <p
+        v-if="errorMessage && errorField === 'email'"
+        class="text-red-500 text-sm mt-1"
+      >
+        {{ errorMessage }}
+      </p>
 
-      <Input type="password" label="Password" placeholder="Enter your password" class="w-full mt-5" v-model="password" @enter="signup"/>
-      <p v-if="errorMessage && errorField === 'password'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
+      <Input
+        type="password"
+        label="Password"
+        placeholder="Enter your password"
+        class="w-full mt-5"
+        v-model="password"
+        @enter="signup"
+      />
+      <p
+        v-if="errorMessage && errorField === 'password'"
+        class="text-red-500 text-sm mt-1"
+      >
+        {{ errorMessage }}
+      </p>
 
-      <Input type="password" label="Confirm Password" placeholder="Confirm your password" class="w-full mt-5" v-model="confirmPassword" @enter="signup"/>
-      <p v-if="errorMessage && errorField === 'confirmPassword'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
+      <Input
+        type="password"
+        label="Confirm Password"
+        placeholder="Confirm your password"
+        class="w-full mt-5"
+        v-model="confirmPassword"
+        @enter="signup"
+      />
+      <p
+        v-if="errorMessage && errorField === 'confirmPassword'"
+        class="text-red-500 text-sm mt-1"
+      >
+        {{ errorMessage }}
+      </p>
 
       <Button text="Sign Up" class="mt-10 w-full" @click="signup" />
 
-      <p v-if="errorMessage && errorField === 'general'" class="text-red-500 text-sm mt-3">{{ errorMessage }}</p>
+      <p
+        v-if="errorMessage && errorField === 'general'"
+        class="text-red-500 text-sm mt-3"
+      >
+        {{ errorMessage }}
+      </p>
     </div>
     <DarkModeToggle />
   </section>
@@ -42,7 +100,9 @@ import { appwriteService } from "@/lib/appwriteService";
 import logo from "@/assets/logo.png";
 import logoWhite from "@/assets/logo_white.png";
 
-const isDarkMode = ref(window.matchMedia("(prefers-color-scheme: dark)").matches);
+const isDarkMode = ref(
+  window.matchMedia("(prefers-color-scheme: dark)").matches
+);
 
 watchEffect(() => {
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -99,16 +159,21 @@ async function signup() {
     await appwriteService.registerUser(email.value, password.value, name.value);
     await appwriteService.signIn(email.value, password.value); // Auto login after signup
     await router.push({ name: "main-layout" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Signup error:", error);
 
-    if (error.message.includes("email")) {
-      errorMessage.value = "This email is already in use.";
-      errorField.value = "email";
-    } else {
-      errorMessage.value = "Something went wrong. Please try again.";
-      errorField.value = "general";
+    let errorMessageText = "Something went wrong. Please try again.";
+    let errorFieldText = "general";
+
+    if (error instanceof Error) {
+      if (error.message.includes("email")) {
+        errorMessageText = "This email is already in use.";
+        errorFieldText = "email";
+      }
     }
+
+    errorMessage.value = errorMessageText;
+    errorField.value = errorFieldText;
   }
 }
 
