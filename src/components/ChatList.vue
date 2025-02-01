@@ -43,7 +43,12 @@
           v-for="chat in chats"
           :key="chat.$id"
           @click="openChat(chat)"
-          class="p-4 border-b cursor-pointer bg-gray-200 dark:bg-inherit hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-4"
+          class="p-4 border-b cursor-pointer flex items-center gap-4 transition-all duration-200
+                 hover:bg-gray-200 dark:hover:bg-gray-800"
+          :class="{
+            'bg-blue-100 dark:bg-blue-700': selectedChatId === chat.$id, 
+            'bg-gray-100 dark:bg-inherit': selectedChatId !== chat.$id
+          }"
       >
         <Avatar />
         <span v-if="chat.user1Id !== currentUser?.$id">
@@ -75,10 +80,10 @@ const props = defineProps({
 const emit = defineEmits(["chat-selected"]);
 
 const router = useRouter();
-// Would be better to type guard with interfaces
 const chats = ref<any[]>([]);
 const users = ref<any[]>([]);
 const selectedUser = ref<string | null>(null);
+const selectedChatId = ref<string | null>(null); // 🔹 Track active chat
 const loading = ref(true);
 const errorMessage = ref("");
 const currentUser = ref<any>(null);
@@ -113,7 +118,7 @@ onMounted(async () => {
     // Fetch all users (excluding current user)
     const userData = await appwriteService.getAllUsers(currentUser.value.$id);
     users.value = userData;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[ChatList] Error:", error);
     errorMessage.value = "Failed to load chats.";
   } finally {
@@ -151,7 +156,7 @@ async function startNewChat() {
     } else {
       await router.push({ name: "chat-window", params: { id: newChat.$id } });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Start New Chat] Error:", error);
     errorMessage.value = "Failed to start chat.";
   }
@@ -162,14 +167,15 @@ async function logout() {
   try {
     await appwriteService.logout();
     router.push({ name: "signin" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Logout Error]:", error);
     errorMessage.value = "Failed to log out.";
   }
 }
 
-// When a chat is clicked, behave differently based on mode.
+// When a chat is clicked, update `selectedChatId` to highlight it
 function openChat(chat: any) {
+  selectedChatId.value = chat.$id; // 🔹 Set active chat
   if (props.mode === "desktop") {
     emit("chat-selected", chat);
   } else {
