@@ -8,6 +8,7 @@
         :placeholder="placeholder"
         :value="modelValue"
         @input="handleInput"
+        @keyup.enter="handleEnter"
       />
     </div>
   </div>
@@ -29,6 +30,12 @@ function handleInput(event: Event) {
   const target = event.target as HTMLInputElement;
   if (target) {
     emit("update:modelValue", target.value);
+  }
+}
+
+function handleEnter(event: KeyboardEvent) {
+  if (event.key === "Enter") {
+    emit("enter"); // Emit 'enter' event when Enter key is pressed
   }
 }
 </script>

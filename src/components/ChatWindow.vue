@@ -1,13 +1,14 @@
 <template>
   <div class="w-full flex flex-col h-full dark:bg-gray-900">
     <!-- Header row -->
-    <div class="p-4 border-b flex items-center">
+    <div class="p-4 border-b flex items-center gap-3">
       <!-- Only visible on mobile (hidden at lg+) -->
       <button @click="goBack" class="mr-4 text-blue-500 lg:hidden">
         ← Back
       </button>
+      <Avatar />
       <h2 class="text-xl font-semibold">
-        Chat with {{ chatPartnerName || "Loading..." }}
+       {{ chatPartnerName || "Loading..." }}
       </h2>
     </div>
 
@@ -48,7 +49,8 @@
           type="text"
           v-model="newMessage"
           placeholder="Type a message..."
-          class="flex-1 p-2 border rounded-lg"
+          class="flex-1 p-2 border rounded-lg dark:bg-gray-800"
+          @keyup.enter="sendMessage"
       />
       <button
           @click="sendMessage"
@@ -64,6 +66,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { appwriteService } from "@/lib/appwriteService";
+import Avatar from "@/components/Avatar.vue";
 
 // Allow an optional prop so that in desktop mode the parent can pass the chat id.
 interface Props {

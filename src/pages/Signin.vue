@@ -12,10 +12,10 @@
         or <span class="text-blue-500"><router-link to="/signup">Create an Account</router-link></span>
       </p>
 
-      <Input type="text" label="Email" placeholder="user@example.com" class="w-full mt-10" v-model="email" />
+      <Input type="text" label="Email" placeholder="user@example.com" class="w-full mt-10" v-model="email" @enter="signin" />
       <p v-if="errorMessage && errorField === 'email'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
 
-      <Input type="password" label="Password" placeholder="Enter your password" class="w-full mt-5" v-model="password" />
+      <Input type="password" label="Password" placeholder="Enter your password" class="w-full mt-5" v-model="password" @enter="signin" />
       <p v-if="errorMessage && errorField === 'password'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
 
       <Button text="Sign In" class="mt-10 w-full" @click="signin" />

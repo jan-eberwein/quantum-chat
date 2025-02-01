@@ -12,16 +12,16 @@
         or <span class="text-blue-500"><router-link to="/signin">Sign In</router-link></span>
       </p>
 
-      <Input type="text" label="Name" placeholder="Your Name" class="w-full mt-5" v-model="name" />
+      <Input type="text" label="Name" placeholder="Your Name" class="w-full mt-5" v-model="name" @enter="signup" />
       <p v-if="errorMessage && errorField === 'name'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
 
-      <Input type="text" label="Email" placeholder="user@example.com" class="w-full mt-5" v-model="email" />
+      <Input type="text" label="Email" placeholder="user@example.com" class="w-full mt-5" v-model="email" @enter="signup"/>
       <p v-if="errorMessage && errorField === 'email'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
 
-      <Input type="password" label="Password" placeholder="Enter your password" class="w-full mt-5" v-model="password" />
+      <Input type="password" label="Password" placeholder="Enter your password" class="w-full mt-5" v-model="password" @enter="signup"/>
       <p v-if="errorMessage && errorField === 'password'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
 
-      <Input type="password" label="Confirm Password" placeholder="Confirm your password" class="w-full mt-5" v-model="confirmPassword" />
+      <Input type="password" label="Confirm Password" placeholder="Confirm your password" class="w-full mt-5" v-model="confirmPassword" @enter="signup"/>
       <p v-if="errorMessage && errorField === 'confirmPassword'" class="text-red-500 text-sm mt-1">{{ errorMessage }}</p>
 
       <Button text="Sign Up" class="mt-10 w-full" @click="signup" />

@@ -8,11 +8,11 @@
       <button @click="logout" class="text-red-500 hover:underline">Logout</button>
     </div>
 
-    <h2 class="text-xl font-semibold p-4">Chats</h2>
+    <h2 class="text-3xl font-semibold p-4">Chats</h2>
 
     <!-- Start New Chat -->
     <div class="p-4">
-      <select v-model="selectedUser" class="p-2 border rounded-lg w-full">
+      <select v-model="selectedUser" class="p-2 border rounded-lg w-full dark:bg-gray-800">
         <option :value="null" disabled>Select a user to chat with</option>
         <option
             v-for="user in filteredUsers"
@@ -43,13 +43,14 @@
           v-for="chat in chats"
           :key="chat.$id"
           @click="openChat(chat)"
-          class="p-4 border-b cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+          class="p-4 border-b cursor-pointer bg-gray-200 dark:bg-inherit hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-4"
       >
+        <Avatar />
         <span v-if="chat.user1Id !== currentUser?.$id">
-          Chat with {{ chat.user1Name }}
+           {{ chat.user1Name }}
         </span>
         <span v-else>
-          Chat with {{ chat.user2Name }}
+         {{ chat.user2Name }}
         </span>
       </li>
     </ul>
@@ -62,6 +63,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { appwriteService } from "@/lib/appwriteService";
+import Avatar from "@/components/Avatar.vue";
 
 // Accept a prop to know which mode we're in: "mobile" or "desktop"
 const props = defineProps({
