@@ -23,7 +23,10 @@ interface Props {
 }
 
 defineProps<Props>();
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits<{
+  (event: "update:modelValue", value: string): void;
+  (event: "enter"): void; 
+}>();
 
 // ✅ Sicherstellen, dass `$event.target` ein `HTMLInputElement` ist
 function handleInput(event: Event) {
