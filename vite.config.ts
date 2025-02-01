@@ -2,10 +2,10 @@
 import { fileURLToPath, URL } from 'node:url';
 import vue from '@vitejs/plugin-vue';
 import autoprefixer from 'autoprefixer';
-import tailwind from 'tailwindcss'
-import { defineConfig } from 'vite';
+import tailwind from 'tailwindcss';
+import { defineConfig } from 'vitest/config'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
     css: {
         postcss: {
@@ -16,6 +16,15 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src/', import.meta.url)), // Ensure correct alias resolution
+        },
+    },
+    test: { 
+        globals: true, // Enables global test variables
+        environment: 'jsdom', // Simulates browser-like environment
+        setupFiles: './vitest.setup.ts', // Setup file for test configs
+        coverage: {
+            provider: 'istanbul', // Enables code coverage
+            reportsDirectory: './coverage',
         },
     },
 });
