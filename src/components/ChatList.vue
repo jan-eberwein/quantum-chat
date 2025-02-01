@@ -169,11 +169,14 @@ async function startNewChat() {
       }
     }
 
-    // Add the new chat to our list and clear the selection.
+    // Add the new chat to our list
     chats.value.push(newChat);
     selectedUser.value = null;
 
-    // In desktop mode, emit the selected chat; in mobile, navigate to the chat route.
+    // 🔹 Automatically select the new chat and highlight it
+    selectedChatId.value = newChat.$id;
+
+    // Emit or navigate based on mode
     if (props.mode === "desktop") {
       emit("chat-selected", newChat);
     } else {
