@@ -1,6 +1,7 @@
 import { account, databases } from "@/config/config";
 import { Query, Permission, ID } from "appwrite";
 import { appwriteConfig } from "@/config/config";
+import type { UserDoc, ChatDoc, MessageDoc, AppwriteAccount } from "@/lib/types";
 
 const databaseId = appwriteConfig.databaseId;
 const usersCollection = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
@@ -9,21 +10,25 @@ const messagesCollection = import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID;
 
 export const appwriteService = {
   /** Register User (Auth + Database Entry) */
-  async registerUser(email: string, password: string, name: string) {
+  async registerUser(
+      email: string,
+      password: string,
+      name: string
+  ): Promise<UserDoc> {
     try {
       // Create user in Appwrite Authentication
       const user = await account.create(ID.unique(), email, password, name);
 
       // Add user to the Database for linking with chats
-      const userData = await databases.createDocument(
-        databaseId,
-        usersCollection,
-        ID.unique(),
-        {
-          accountId: user.$id,
-          email,
-          name,
-        }
+      const userData = await databases.createDocument<UserDoc>(
+          databaseId,
+          usersCollection,
+          ID.unique(),
+          {
+            accountId: user.$id,
+            email,
+            name,
+          }
       );
 
       return userData;
@@ -39,8 +44,12 @@ export const appwriteService = {
   },
 
   /** Sign In a User */
-  async signIn(email: string, password: string) {
+  async signIn(
+      email: string,
+      password: string
+  ): Promise<unknown> {
     try {
+      // We return a session object (type from appwrite can be "Models.Session" if desired)
       return await account.createEmailPasswordSession(email, password);
     } catch (error: unknown) {
       console.error("[Sign In Error]:", error);
@@ -52,7 +61,7 @@ export const appwriteService = {
   },
 
   /** Logout User */
-  async logout() {
+  async logout(): Promise<void> {
     try {
       await account.deleteSession("current");
     } catch (error: unknown) {
@@ -62,7 +71,7 @@ export const appwriteService = {
   },
 
   /** Get the currently logged-in user */
-  async getCurrentUser() {
+  async getCurrentUser(): Promise<AppwriteAccount | null> {
     try {
       return await account.get();
     } catch (error: unknown) {
@@ -72,10 +81,15 @@ export const appwriteService = {
   },
 
   /** Fetch All Registered Users (Excluding Self) */
-  async getAllUsers(excludeUserId: string) {
+  async getAllUsers(excludeUserId: string): Promise<UserDoc[]> {
     try {
-      const users = await databases.listDocuments(databaseId, usersCollection);
-      return users.documents.filter((user) => user.accountId !== excludeUserId);
+      const users = await databases.listDocuments<UserDoc>(
+          databaseId,
+          usersCollection
+      );
+      return users.documents.filter(
+          (user) => user.accountId !== excludeUserId
+      );
     } catch (error: unknown) {
       console.error("[Get All Users Error]:", error);
       throw new Error("Failed to fetch users.");
@@ -83,9 +97,13 @@ export const appwriteService = {
   },
 
   /** Fetch Full User Profile */
-  async getUserProfile(userId: string) {
+  async getUserProfile(userId: string): Promise<UserDoc> {
     try {
-      return await databases.getDocument(databaseId, usersCollection, userId);
+      return await databases.getDocument<UserDoc>(
+          databaseId,
+          usersCollection,
+          userId
+      );
     } catch (error: unknown) {
       console.error("[Get User Profile Error]:", error);
       throw new Error("Failed to fetch user profile.");
@@ -93,7 +111,7 @@ export const appwriteService = {
   },
 
   /** Fetch User's Chats */
-  async getUserChats(userId: string) {
+  async getUserChats(userId: string): Promise<ChatDoc[]> {
     try {
       if (!userId) {
         throw new Error("Invalid userId provided for fetching chats.");
@@ -106,10 +124,10 @@ export const appwriteService = {
         ]),
       ];
 
-      const response = await databases.listDocuments(
-        databaseId,
-        chatsCollection,
-        queries
+      const response = await databases.listDocuments<ChatDoc>(
+          databaseId,
+          chatsCollection,
+          queries
       );
       return response.documents;
     } catch (error: unknown) {
@@ -119,19 +137,19 @@ export const appwriteService = {
   },
 
   /** Enhanced version: fetch user chats WITH name/email fields */
-  async getUserChatsWithNames(userId: string) {
+  async getUserChatsWithNames(userId: string): Promise<ChatDoc[]> {
     const chats = await this.getUserChats(userId);
     // For each chat, fetch the user documents so we can attach their name/email.
     for (const chat of chats) {
-      const user1Docs = await databases.listDocuments(
-        databaseId,
-        usersCollection,
-        [Query.equal("accountId", [chat.user1Id])]
+      const user1Docs = await databases.listDocuments<UserDoc>(
+          databaseId,
+          usersCollection,
+          [Query.equal("accountId", [chat.user1Id])]
       );
-      const user2Docs = await databases.listDocuments(
-        databaseId,
-        usersCollection,
-        [Query.equal("accountId", [chat.user2Id])]
+      const user2Docs = await databases.listDocuments<UserDoc>(
+          databaseId,
+          usersCollection,
+          [Query.equal("accountId", [chat.user2Id])]
       );
       chat.user1Name = user1Docs.documents[0]?.name ?? "Unknown";
       chat.user2Name = user2Docs.documents[0]?.name ?? "Unknown";
@@ -142,42 +160,41 @@ export const appwriteService = {
   },
 
   /** Create a New Chat */
-  async createChat(user1Id: string, user2Id: string) {
+  async createChat(user1Id: string, user2Id: string): Promise<ChatDoc> {
     try {
       if (user1Id === user2Id) {
         throw new Error("You cannot start a chat with yourself.");
       }
 
       // Check if chat already exists
-      const existingChats = await databases.listDocuments(
-        databaseId,
-        chatsCollection,
-        [
-          Query.or([
-            Query.and([
-              Query.equal("user1Id", user1Id),
-              Query.equal("user2Id", user2Id),
+      const existingChats = await databases.listDocuments<ChatDoc>(
+          databaseId,
+          chatsCollection,
+          [
+            Query.or([
+              Query.and([
+                Query.equal("user1Id", user1Id),
+                Query.equal("user2Id", user2Id),
+              ]),
+              Query.and([
+                Query.equal("user1Id", user2Id),
+                Query.equal("user2Id", user1Id),
+              ]),
             ]),
-            Query.and([
-              Query.equal("user1Id", user2Id),
-              Query.equal("user2Id", user1Id),
-            ]),
-          ]),
-        ]
+          ]
       );
 
-      if (existingChats.total > 0) return existingChats.documents[0];
+      if (existingChats.total > 0) {
+        return existingChats.documents[0];
+      }
 
       // Create new chat
-      return await databases.createDocument(
-        databaseId,
-        chatsCollection,
-        ID.unique(),
-        {
-          user1Id,
-          user2Id,
-        },
-        [Permission.read("users/unverified")] // Keeping the permission as is
+      return await databases.createDocument<ChatDoc>(
+          databaseId,
+          chatsCollection,
+          ID.unique(),
+          { user1Id, user2Id },
+          [Permission.read("users/unverified")]
       );
     } catch (error: unknown) {
       console.error("[Create Chat Error]:", error);
@@ -191,12 +208,17 @@ export const appwriteService = {
   },
 
   /** Fetch Messages for a Chat */
-  async getChatMessages(chatId: string) {
+  async getChatMessages(chatId: string): Promise<{ documents: MessageDoc[] }> {
     try {
-      return await databases.listDocuments(databaseId, messagesCollection, [
-        Query.equal("chatId", chatId),
-        Query.orderDesc("sent_at"),
-      ]);
+      // Return entire object for .documents
+      return await databases.listDocuments<MessageDoc>(
+          databaseId,
+          messagesCollection,
+          [
+            Query.equal("chatId", chatId),
+            Query.orderDesc("sent_at"),
+          ]
+      );
     } catch (error: unknown) {
       console.error("[Get Chat Messages Error]:", error);
       if (error instanceof Error) {
@@ -207,18 +229,22 @@ export const appwriteService = {
   },
 
   /** Send a New Message */
-  async sendMessage(chatId: string, senderId: string, content: string) {
+  async sendMessage(
+      chatId: string,
+      senderId: string,
+      content: string
+  ): Promise<MessageDoc> {
     try {
-      return await databases.createDocument(
-        databaseId,
-        messagesCollection,
-        ID.unique(),
-        {
-          chatId,
-          senderId,
-          content,
-          sent_at: new Date().toISOString(),
-        }
+      return await databases.createDocument<MessageDoc>(
+          databaseId,
+          messagesCollection,
+          ID.unique(),
+          {
+            chatId,
+            senderId,
+            content,
+            sent_at: new Date().toISOString(),
+          }
       );
     } catch (error: unknown) {
       console.error("[Send Message Error]:", error);
@@ -230,7 +256,7 @@ export const appwriteService = {
   },
 
   /** Delete a Message */
-  async deleteMessage(messageId: string) {
+  async deleteMessage(messageId: string): Promise<void> {
     try {
       await databases.deleteDocument(databaseId, messagesCollection, messageId);
     } catch (error: unknown) {

@@ -29,6 +29,8 @@ import ChatList from "@/components/ChatList.vue";
 import ChatWindow from "@/components/ChatWindow.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
 
+import type { ChatDoc } from "@/lib/types"; // <--- NEW
+
 // Tracks the active chat for desktop mode
-const selectedChat = ref<any>(null);
+const selectedChat = ref<ChatDoc | null>(null);
 </script>
